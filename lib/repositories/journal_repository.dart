@@ -7,11 +7,11 @@ class JournalRepository {
   final JournalStorage _storage;
 
   JournalRepository({JournalStorage? storage})
-      : _storage = storage ?? JournalStorage();
+    : _storage = storage ?? JournalStorage();
 
   /// Returns all entries, newest first.
   Future<List<JournalEntry>> loadEntries() async {
-    final entries = await _storage.getAllEntries();
+    final entries = await _storage.loadEntries();
     entries.sort((a, b) => b.date.compareTo(a.date));
     return entries;
   }

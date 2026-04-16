@@ -1,7 +1,11 @@
+import 'package:gap/gap.dart';
+import '../cubit/journal_cubit.dart';
+import '../models/journal_entry.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:gap/gap.dart';
+
 
 // ─────────────────────────────────────────────────────────
 // Mood model — pure data, no architecture layer needed yet
@@ -65,7 +69,6 @@ class AddEntryScreen extends StatefulWidget {
 
 class _AddEntryScreenState extends State<AddEntryScreen>
     with SingleTickerProviderStateMixin {
-  // Local UI state — this is just widget state, not architecture-level state management
   int? _selectedMoodIndex;
   final TextEditingController _noteController = TextEditingController();
   final FocusNode _noteFocusNode = FocusNode();
@@ -116,7 +119,17 @@ class _AddEntryScreenState extends State<AddEntryScreen>
     HapticFeedback.mediumImpact();
     _noteFocusNode.unfocus();
 
-    // TODO (next step): persist entry to in-memory list / storage
+    final entry = JournalEntry(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      text: _noteController.text.trim(),
+      mood: _selectedMood!.label,
+      date: DateTime.now(),
+      moodIndex: ,
+        note: '',
+    );
+
+    context.read<JournalCubit>().addEntry(entry);
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -138,13 +151,13 @@ class _AddEntryScreenState extends State<AddEntryScreen>
         ),
         backgroundColor: _selectedMood!.color,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(16),
         duration: const Duration(seconds: 2),
       ),
     );
 
-    // Return to Home Screen with a short delay so user sees the snackbar
     Future.delayed(const Duration(milliseconds: 1800), () {
       if (mounted) Navigator.of(context).pop();
     });
@@ -210,12 +223,12 @@ class _AddEntryScreenState extends State<AddEntryScreen>
               ),
             ),
           ),
-          // Animated mood emoji in the app bar (shows after selection)
           if (_selectedMood != null)
             ScaleTransition(
               scale: _moodScaleAnim,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: _selectedMood!.lightColor,
                   borderRadius: BorderRadius.circular(20),
@@ -319,7 +332,8 @@ class _AddEntryScreenState extends State<AddEntryScreen>
                 ]
               : [
                   BoxShadow(
-                    color: const Color(0xFF7C6FCD).withValues(alpha: 0.05),
+                    color:
+                        const Color(0xFF7C6FCD).withValues(alpha: 0.05),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -342,8 +356,10 @@ class _AddEntryScreenState extends State<AddEntryScreen>
               mood.label,
               style: GoogleFonts.inter(
                 fontSize: 11,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                color: isSelected ? mood.color : const Color(0xFF9D95C7),
+                fontWeight:
+                    isSelected ? FontWeight.w600 : FontWeight.w400,
+                color:
+                    isSelected ? mood.color : const Color(0xFF9D95C7),
               ),
             ),
           ],
@@ -405,8 +421,11 @@ class _AddEntryScreenState extends State<AddEntryScreen>
             maxLength: _maxChars,
             onTap: () => setState(() {}),
             onChanged: (_) => setState(() {}),
-            buildCounter: (_, {required currentLength, required isFocused, maxLength}) =>
-                null, // hide default counter — we show our own
+            buildCounter: (_,
+                    {required currentLength,
+                    required isFocused,
+                    maxLength}) =>
+                null,
             style: GoogleFonts.inter(
               fontSize: 15,
               height: 1.6,
@@ -465,16 +484,20 @@ class _AddEntryScreenState extends State<AddEntryScreen>
             children: [
               Icon(
                 Icons.check_rounded,
-                color: _canSave ? Colors.white : const Color(0xFFBBB7DF),
+                color:
+                    _canSave ? Colors.white : const Color(0xFFBBB7DF),
                 size: 22,
               ),
               const Gap(10),
               Text(
-                _canSave ? 'Save Entry' : 'Select mood & write to save',
+                _canSave
+                    ? 'Save Entry'
+                    : 'Select mood & write to save',
                 style: GoogleFonts.inter(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color: _canSave ? Colors.white : const Color(0xFFBBB7DF),
+                  color:
+                      _canSave ? Colors.white : const Color(0xFFBBB7DF),
                 ),
               ),
             ],

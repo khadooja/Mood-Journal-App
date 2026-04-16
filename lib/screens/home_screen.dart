@@ -1,7 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:gap/gap.dart';
 import 'add_entry_screen.dart';
+import '../cubit/journal_cubit.dart';
+import '../cubit/journal_state.dart';
+import '../models/journal_entry.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -10,12 +15,40 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            _buildAppBar(context),
-            _buildGreetingHeader(context),
-            _buildEmptyState(context),
-          ],
+        child: BlocBuilder<JournalCubit, JournalState>(
+          builder: (context, state) {
+            return CustomScrollView(
+              slivers: [
+                _buildAppBar(context),
+                _buildGreetingHeader(context),
+                if (state is JournalInitial || state is JournalLoading)
+                  const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (state is JournalError)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                      child: Text(
+                        state.message,
+                        style: GoogleFonts.inter(
+                          fontSize: 15,
+                          color: Colors.redAccent,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  )
+                else if (state is JournalLoaded && state.entries.isEmpty)
+                  _buildEmptyState(context)
+                else if (state is JournalLoaded)
+                  _buildEntryList(context, state.entries)
+                else
+                  _buildEmptyState(context),
+              ],
+            );
+          },
         ),
       ),
       floatingActionButton: _buildFAB(context),
@@ -117,7 +150,6 @@ class HomeScreen extends StatelessWidget {
               ],
             ),
             const Gap(20),
-            // Mood quick-summary strip (placeholder for future data)
             _buildMoodStrip(),
             const Gap(24),
             Text(
@@ -139,7 +171,6 @@ class HomeScreen extends StatelessWidget {
   // ────────────────────────────────────────────────
   Widget _buildMoodStrip() {
     final days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-    // All empty for now — will reflect real data in a future step
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
@@ -192,7 +223,8 @@ class HomeScreen extends StatelessWidget {
                           : const Color(0xFFF0EEF9),
                       shape: BoxShape.circle,
                       border: isToday
-                          ? Border.all(color: const Color(0xFF7C6FCD), width: 1.5)
+                          ? Border.all(
+                              color: const Color(0xFF7C6FCD), width: 1.5)
                           : null,
                     ),
                     child: const Icon(
@@ -211,6 +243,107 @@ class HomeScreen extends StatelessWidget {
   }
 
   // ────────────────────────────────────────────────
+  // Entry list — rendered when JournalLoaded & non-empty
+  // ────────────────────────────────────────────────
+  SliverPadding _buildEntryList(
+      BuildContext context, List<JournalEntry> entries) {
+    return SliverPadding(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) => _buildEntryCard(context, entries[index]),
+          childCount: entries.length,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEntryCard(BuildContext context, JournalEntry entry) {
+    // Map mood label back to its MoodOption for color/emoji
+    final mood = kMoodOptions.firstWhere(
+      (m) => m.label == entry.mood,
+      orElse: () => kMoodOptions[2], // fallback to 'Okay'
+    );
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF7C6FCD).withValues(alpha: 0.07),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  // Mood badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: mood.lightColor,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          mood.emoji,
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                        const Gap(5),
+                        Text(
+                          mood.label,
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: mood.color,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Spacer(),
+                  // Date
+                  Text(
+                    _formatEntryDate(entry.date),
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: const Color(0xFF9D95C7),
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+              const Gap(12),
+              Text(
+                entry.text,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  height: 1.6,
+                  color: const Color(0xFF2D2B55),
+                ),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ────────────────────────────────────────────────
   // Empty state — shown when no journal entries exist
   // ────────────────────────────────────────────────
   SliverFillRemaining _buildEmptyState(BuildContext context) {
@@ -221,7 +354,6 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Illustration container
             Container(
               width: 120,
               height: 120,
@@ -256,7 +388,6 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const Gap(32),
-            // Subtle hint arrow pointing down toward FAB
             Column(
               children: [
                 Text(
@@ -286,10 +417,13 @@ class HomeScreen extends StatelessWidget {
   // ────────────────────────────────────────────────
   Widget _buildFAB(BuildContext context) {
     return FloatingActionButton.extended(
-      onPressed: () {
-        Navigator.of(context).push(
+      onPressed: () async {
+        await Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const AddEntryScreen()),
         );
+        if (context.mounted) {
+          context.read<JournalCubit>().loadEntries();
+        }
       },
       backgroundColor: const Color(0xFF7C6FCD),
       foregroundColor: Colors.white,
@@ -326,5 +460,16 @@ class HomeScreen extends StatelessWidget {
       'Thursday', 'Friday', 'Saturday', 'Sunday',
     ];
     return '${weekdays[date.weekday - 1]}, ${months[date.month - 1]} ${date.day}';
+  }
+
+  String _formatEntryDate(DateTime date) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    final hour = date.hour.toString().padLeft(2, '0');
+    final minute = date.minute.toString().padLeft(2, '0');
+    return '${weekdays[date.weekday - 1]}, ${months[date.month - 1]} ${date.day}  $hour:$minute';
   }
 }

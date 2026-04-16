@@ -1,21 +1,34 @@
+import 'cubit/journal_cubit.dart';
+import 'screens/home_screen.dart';
+import 'models/journal_entry.dart';
 import 'package:flutter/material.dart';
+import 'repositories/journal_repository.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-import 'models/journal_entry.dart';
-import 'storage/journal_storage.dart';
-import 'app.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize Hive with the Flutter app directory
   await Hive.initFlutter();
-
-  // Register the generated TypeAdapter so Hive knows how to read/write JournalEntry
   Hive.registerAdapter(JournalEntryAdapter());
-
-  // Open the journal entries box — must happen before any screen reads from it
-  await JournalStorage.init();
+  await Hive.openBox<JournalEntry>('journalBox');
 
   runApp(const MindTrackApp());
+}
+
+class MindTrackApp extends StatelessWidget {
+  const MindTrackApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      // ..loadEntries() triggers the first load immediately on app start
+      create: (_) => JournalCubit(repository: JournalRepository())
+        ..loadEntries(),
+      child: MaterialApp(
+        title: 'MindTrack',
+        home: const HomeScreen(),
+      ),
+    );
+  }
 }
