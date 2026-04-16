@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-
 // ─────────────────────────────────────────────────────────
 // Mood model — pure data, no architecture layer needed yet
 // ─────────────────────────────────────────────────────────
@@ -121,11 +120,9 @@ class _AddEntryScreenState extends State<AddEntryScreen>
 
     final entry = JournalEntry(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      text: _noteController.text.trim(),
-      mood: _selectedMood!.label,
+      moodIndex: _selectedMoodIndex!, 
+      note: _noteController.text.trim(),
       date: DateTime.now(),
-      moodIndex: ,
-        note: '',
     );
 
     context.read<JournalCubit>().addEntry(entry);
@@ -134,10 +131,7 @@ class _AddEntryScreenState extends State<AddEntryScreen>
       SnackBar(
         content: Row(
           children: [
-            Text(
-              _selectedMood!.emoji,
-              style: const TextStyle(fontSize: 18),
-            ),
+            Text(_selectedMood!.emoji, style: const TextStyle(fontSize: 18)),
             const Gap(10),
             Text(
               'Entry saved!',
@@ -151,8 +145,7 @@ class _AddEntryScreenState extends State<AddEntryScreen>
         ),
         backgroundColor: _selectedMood!.color,
         behavior: SnackBarBehavior.floating,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(16),
         duration: const Duration(seconds: 2),
       ),
@@ -205,10 +198,7 @@ class _AddEntryScreenState extends State<AddEntryScreen>
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(
-              Icons.arrow_back_ios_new_rounded,
-              size: 20,
-            ),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
             color: const Color(0xFF2D2B55),
             onPressed: () => Navigator.of(context).pop(),
             tooltip: 'Back',
@@ -227,8 +217,10 @@ class _AddEntryScreenState extends State<AddEntryScreen>
             ScaleTransition(
               scale: _moodScaleAnim,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: _selectedMood!.lightColor,
                   borderRadius: BorderRadius.circular(20),
@@ -332,8 +324,7 @@ class _AddEntryScreenState extends State<AddEntryScreen>
                 ]
               : [
                   BoxShadow(
-                    color:
-                        const Color(0xFF7C6FCD).withValues(alpha: 0.05),
+                    color: const Color(0xFF7C6FCD).withValues(alpha: 0.05),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -346,20 +337,15 @@ class _AddEntryScreenState extends State<AddEntryScreen>
               scale: isSelected ? 1.2 : 1.0,
               duration: const Duration(milliseconds: 200),
               curve: Curves.elasticOut,
-              child: Text(
-                mood.emoji,
-                style: const TextStyle(fontSize: 26),
-              ),
+              child: Text(mood.emoji, style: const TextStyle(fontSize: 26)),
             ),
             const Gap(8),
             Text(
               mood.label,
               style: GoogleFonts.inter(
                 fontSize: 11,
-                fontWeight:
-                    isSelected ? FontWeight.w600 : FontWeight.w400,
-                color:
-                    isSelected ? mood.color : const Color(0xFF9D95C7),
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                color: isSelected ? mood.color : const Color(0xFF9D95C7),
               ),
             ),
           ],
@@ -421,11 +407,9 @@ class _AddEntryScreenState extends State<AddEntryScreen>
             maxLength: _maxChars,
             onTap: () => setState(() {}),
             onChanged: (_) => setState(() {}),
-            buildCounter: (_,
-                    {required currentLength,
-                    required isFocused,
-                    maxLength}) =>
-                null,
+            buildCounter:
+                (_, {required currentLength, required isFocused, maxLength}) =>
+                    null,
             style: GoogleFonts.inter(
               fontSize: 15,
               height: 1.6,
@@ -466,8 +450,9 @@ class _AddEntryScreenState extends State<AddEntryScreen>
         boxShadow: _canSave
             ? [
                 BoxShadow(
-                  color: (mood?.color ?? const Color(0xFF7C6FCD))
-                      .withValues(alpha: 0.35),
+                  color: (mood?.color ?? const Color(0xFF7C6FCD)).withValues(
+                    alpha: 0.35,
+                  ),
                   blurRadius: 16,
                   offset: const Offset(0, 6),
                 ),
@@ -484,20 +469,16 @@ class _AddEntryScreenState extends State<AddEntryScreen>
             children: [
               Icon(
                 Icons.check_rounded,
-                color:
-                    _canSave ? Colors.white : const Color(0xFFBBB7DF),
+                color: _canSave ? Colors.white : const Color(0xFFBBB7DF),
                 size: 22,
               ),
               const Gap(10),
               Text(
-                _canSave
-                    ? 'Save Entry'
-                    : 'Select mood & write to save',
+                _canSave ? 'Save Entry' : 'Select mood & write to save',
                 style: GoogleFonts.inter(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color:
-                      _canSave ? Colors.white : const Color(0xFFBBB7DF),
+                  color: _canSave ? Colors.white : const Color(0xFFBBB7DF),
                 ),
               ),
             ],
@@ -541,8 +522,18 @@ class _AddEntryScreenState extends State<AddEntryScreen>
   // ─────────────────────────────────────────────
   String _formatDate(DateTime date) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     return '${weekdays[date.weekday - 1]}, ${months[date.month - 1]} ${date.day}';

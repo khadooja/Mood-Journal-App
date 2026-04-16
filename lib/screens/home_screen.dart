@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -74,7 +73,11 @@ class HomeScreen extends StatelessWidget {
               color: const Color(0xFF7C6FCD),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.auto_awesome, color: Colors.white, size: 18),
+            child: const Icon(
+              Icons.auto_awesome,
+              color: Colors.white,
+              size: 18,
+            ),
           ),
           const Gap(10),
           Text(
@@ -224,7 +227,9 @@ class HomeScreen extends StatelessWidget {
                       shape: BoxShape.circle,
                       border: isToday
                           ? Border.all(
-                              color: const Color(0xFF7C6FCD), width: 1.5)
+                              color: const Color(0xFF7C6FCD),
+                              width: 1.5,
+                            )
                           : null,
                     ),
                     child: const Icon(
@@ -246,7 +251,9 @@ class HomeScreen extends StatelessWidget {
   // Entry list — rendered when JournalLoaded & non-empty
   // ────────────────────────────────────────────────
   SliverPadding _buildEntryList(
-      BuildContext context, List<JournalEntry> entries) {
+    BuildContext context,
+    List<JournalEntry> entries,
+  ) {
     return SliverPadding(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
       sliver: SliverList(
@@ -260,10 +267,7 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildEntryCard(BuildContext context, JournalEntry entry) {
     // Map mood label back to its MoodOption for color/emoji
-    final mood = kMoodOptions.firstWhere(
-      (m) => m.label == entry.mood,
-      orElse: () => kMoodOptions[2], // fallback to 'Okay'
-    );
+    final mood = kMoodOptions[entry.moodIndex];
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -289,7 +293,9 @@ class HomeScreen extends StatelessWidget {
                   // Mood badge
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 5),
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: mood.lightColor,
                       borderRadius: BorderRadius.circular(20),
@@ -297,10 +303,7 @@ class HomeScreen extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          mood.emoji,
-                          style: const TextStyle(fontSize: 14),
-                        ),
+                        Text(mood.emoji, style: const TextStyle(fontSize: 14)),
                         const Gap(5),
                         Text(
                           mood.label,
@@ -327,7 +330,7 @@ class HomeScreen extends StatelessWidget {
               ),
               const Gap(12),
               Text(
-                entry.text,
+                entry.note,
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   height: 1.6,
@@ -418,9 +421,9 @@ class HomeScreen extends StatelessWidget {
   Widget _buildFAB(BuildContext context) {
     return FloatingActionButton.extended(
       onPressed: () async {
-        await Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const AddEntryScreen()),
-        );
+        await Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const AddEntryScreen()));
         if (context.mounted) {
           context.read<JournalCubit>().loadEntries();
         }
@@ -431,10 +434,7 @@ class HomeScreen extends StatelessWidget {
       icon: const Icon(Icons.edit_rounded, size: 20),
       label: Text(
         'New Entry',
-        style: GoogleFonts.inter(
-          fontWeight: FontWeight.w600,
-          fontSize: 15,
-        ),
+        style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 15),
       ),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
     );
@@ -452,20 +452,45 @@ class HomeScreen extends StatelessWidget {
 
   String _formatDate(DateTime date) {
     const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December',
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     const weekdays = [
-      'Monday', 'Tuesday', 'Wednesday',
-      'Thursday', 'Friday', 'Saturday', 'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
     ];
     return '${weekdays[date.weekday - 1]}, ${months[date.month - 1]} ${date.day}';
   }
 
   String _formatEntryDate(DateTime date) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     final hour = date.hour.toString().padLeft(2, '0');
