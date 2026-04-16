@@ -14,6 +14,8 @@ dependencies:
   google_fonts: ^6.2.1        # Clean typography (Inter font)
   gap: ^3.0.1                 # Readable spacing widget
   hive_flutter: ^1.1.0        # Local NoSQL database for journal entries
+  flutter_bloc: ^9.1.1
+  equatable: ^2.0.8
 
 dev_dependencies:
   flutter_test:
