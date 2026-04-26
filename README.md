@@ -1,179 +1,23 @@
----
+A modern recipe mobile application designed and developed using Flutter.
 
-# 🧠 MindTrack – AI Mood Journal App
+This project focuses on delivering a clean and intuitive user experience, while maintaining a scalable and well-structured architecture using Riverpod for state management.
 
-A modern Flutter journaling app that helps users track their daily emotions and gain AI-powered emotional insights.
+The app allows users to explore recipes, view detailed cooking steps and ingredients, and save their favorite meals.
 
-Built with **Flutter, Cubit (BLoC), Hive, and OpenAI API**, MindTrack demonstrates a clean architecture approach combined with real AI integration.
+✨ Key Features:
+- Add new recipes
+- View detailed recipe information (ingredients & steps)
+- Favorites system
+- Clean and modern UI with Material 3
+- State management using Riverpod
+- Handling empty states
+- Optimized image loading with fallback support
 
----
+💡 Goal:
+Apply Clean Architecture principles and build a production-ready UI that is easy to scale and maintain.
 
-## ✨ Features
+🔜 Next Steps:
+- User authentication
+- Backend integration
 
-### 📝 Smart Journaling
-
-* Create daily journal entries
-* Select mood using an intuitive mood selector
-* Store entries locally using Hive (offline-first)
-
-### 😊 Mood Tracking
-
-* Visual mood system (Rough → Great)
-* Weekly mood overview strip
-* Mood history per entry
-
-### 🤖 AI-Powered Insights
-
-* Analyze journal text using OpenAI GPT-4o-mini
-* Get:
-
-  * Detected mood (0–4 scale)
-  * Emotional label (Good, Low, etc.)
-  * Short empathetic insight
-  * Confidence score
-
-### 📊 Smart UI Enhancements
-
-* AI suggestion card inside journal creation
-* Auto mood detection from AI
-* Clean, minimal and modern UI design
-
----
-
-## 🧱 Architecture
-
-MindTrack follows a clean layered architecture:
-
-```
-UI → Cubit → Repository → Storage (Hive)
-                 ↓
-             AI Service → OpenAI API
-```
-
-### Layers:
-
-* **UI Layer** → Flutter Screens & Widgets
-* **Cubit Layer** → State management (flutter_bloc)
-* **Repository Layer** → Business logic abstraction
-* **Storage Layer** → Hive local database
-* **Service Layer** → OpenAI API integration
-
----
-
-## 📦 Tech Stack
-
-* Flutter
-* Dart
-* flutter_bloc (Cubit)
-* Hive (Local Storage)
-* OpenAI API (GPT-4o-mini)
-* flutter_dotenv (Environment variables)
-* HTTP package
-
----
-
-## 🧠 AI Feature Details
-
-The AI analyzes journal entries using the following structure:
-
-### Input:
-
-User journal text
-
-### Output (JSON):
-
-```json
-{
-  "moodIndex": 3,
-  "label": "Good",
-  "confidence": 0.87,
-  "insight": "You seem calm and productive today"
-}
-```
-
----
-
-## 🔐 Security
-
-* API keys are stored in `.env`
-* `.env` is excluded from version control
-* No secrets are hardcoded in source code
-* Uses environment-based configuration via `flutter_dotenv`
-
----
-
-## 🚀 Getting Started
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/your-username/mindtrack.git
-cd mindtrack
-```
-
-### 2. Install dependencies
-
-```bash
-flutter pub get
-```
-
-### 3. Add environment file
-
-Create a `.env` file in root:
-
-```env
-OPENAI_API_KEY=your_api_key_here
-```
-
-### 4. Run the app
-
-```bash
-flutter run
-```
-
----
-
-## 📁 Project Structure
-
-```
-lib/
- ├── cubit/
- ├── models/
- ├── repositories/
- ├── storage/
- ├── services/
- ├── screens/
- ├── widgets/
- └── main.dart
-```
-
----
-
-## 🎯 Purpose of This Project
-
-This project was built to demonstrate:
-
-* Clean Architecture in Flutter
-* State management with Cubit
-* Real-world API integration
-* Local storage with Hive
-* AI-powered feature integration
-* Production-level project structure
-
----
-
-## 💡 Future Improvements
-
-* AI Daily Summary of user mood
-* Mood analytics dashboard
-* Cloud sync (Firebase)
-* Authentication system
-* Push notifications for journaling reminders
-
----
-
-## 👩‍💻 Author
-
-Built with ❤️ using Flutter & AI
-
-
+This case study showcases both the design and development process behind the project.
