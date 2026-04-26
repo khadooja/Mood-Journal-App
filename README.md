@@ -177,5 +177,3 @@ This project was built to demonstrate:
 Built with ❤️ using Flutter & AI
 
 
-
-بس قولّي 👌
