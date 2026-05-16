@@ -7,7 +7,6 @@ import '../repositories/journal_repository.dart';
 /// Owns all business logic for the journal feature.
 /// Screens will call these methods — never the repository directly.
 class JournalCubit extends Cubit<JournalState> {
-  List<JournalEntry> _allEntries = [];
   final JournalRepository _repository;
   final AiService _aiService;
 

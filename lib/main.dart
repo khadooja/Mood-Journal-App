@@ -1,40 +1,36 @@
-import 'cubit/journal_cubit.dart';
-import 'screens/home_screen.dart';
-import 'services/ai_service.dart';
-import 'models/journal_entry.dart';
 import 'package:flutter/material.dart';
-import 'repositories/journal_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+import 'app.dart';
+import 'cubit/journal_cubit.dart';
+import 'models/journal_entry.dart';
+import 'repositories/journal_repository.dart';
+import 'services/ai_service.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   try {
-    await dotenv.load(fileName: ".env");
-    print("API KEY: ${dotenv.env['OPENAI_API_KEY']}");
-  } catch (e) {
-    debugPrint("⚠️ .env file not found, running without API key");
+    await dotenv.load(fileName: '.env');
+    // ignore: avoid_print
+    print('API KEY: ${dotenv.env['OPENAI_API_KEY']}');
+  } catch (_) {
+    debugPrint('⚠️ .env not found — running without API key');
   }
-  //await dotenv.load(fileName: ".env");
+
   await Hive.initFlutter();
   Hive.registerAdapter(JournalEntryAdapter());
-  await Hive.openBox<JournalEntry>('journalBox');
+  await Hive.openBox<JournalEntry>('journal_entries');
 
-  runApp(const MindTrackApp());
-}
-
-class MindTrackApp extends StatelessWidget {
-  const MindTrackApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      // ..loadEntries() triggers the first load immediately on app start
-      create: (_) =>
-          JournalCubit(repository: JournalRepository(), aiService: AiService())
-            ..loadEntries(),
-      child: MaterialApp(title: 'MindTrack', home: const HomeScreen()),
-    );
-  }
+  runApp(
+    BlocProvider(
+      create: (_) => JournalCubit(
+        repository: JournalRepository(),
+        aiService: AiService(),
+      )..loadEntries(),
+      child: const MindTrackApp(),
+    ),
+  );
 }

@@ -1,15 +1,19 @@
-import 'package:gap/gap.dart';
-import '../models/mood_option.dart';
-import '../cubit/journal_cubit.dart';
-import '../models/journal_entry.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import '../core/theme/app_colors.dart';
+import '../core/theme/app_decorations.dart';
+import '../core/theme/app_spacing.dart';
+import '../core/theme/app_text_styles.dart';
+import '../core/widgets/app_button.dart';
+import '../core/widgets/app_text_field.dart';
+import '../cubit/journal_cubit.dart';
+import '../models/journal_entry.dart';
+import '../models/mood_option.dart';
 
 class EntryDetailScreen extends StatefulWidget {
   final JournalEntry entry;
-
   const EntryDetailScreen({super.key, required this.entry});
 
   @override
@@ -26,7 +30,7 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _editMoodIndex = widget.entry.moodIndex;
+    _editMoodIndex  = widget.entry.moodIndex;
     _noteController = TextEditingController(text: widget.entry.note);
   }
 
@@ -37,81 +41,50 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
   }
 
   bool get _canSave => _noteController.text.trim().isNotEmpty;
-
   MoodOption get _currentMood => kMoodOptions[_editMoodIndex];
 
-  // ── Save edited entry ──────────────────────────────────────────────
+  // ── Save edit ──────────────────────────────────────────────────────────
+
   Future<void> _saveEdit() async {
     if (!_canSave) return;
     HapticFeedback.mediumImpact();
-
     final updated = JournalEntry(
-      id: widget.entry.id, // same id — overwrites in Hive
+      id: widget.entry.id,
       moodIndex: _editMoodIndex,
       note: _noteController.text.trim(),
-      date: widget.entry.date, // preserve original date
+      date: widget.entry.date,
     );
-
     await context.read<JournalCubit>().updateEntry(updated);
-
     if (mounted) {
       setState(() => _isEditing = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Entry updated',
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Colors.white,
-            ),
-          ),
+          content: Text('Entry updated'),
           backgroundColor: _currentMood.color,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          margin: const EdgeInsets.all(16),
-          duration: const Duration(seconds: 2),
         ),
       );
     }
   }
 
-  // ── Delete with confirmation ───────────────────────────────────────
+  // ── Delete ─────────────────────────────────────────────────────────────
+
   Future<void> _confirmDelete() async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          'Delete entry?',
-          style: GoogleFonts.inter(
-            fontWeight: FontWeight.w600,
-            color: const Color(0xFF2D2B55),
-          ),
-        ),
-        content: Text(
-          'This cannot be undone.',
-          style: GoogleFonts.inter(
-            fontSize: 14,
-            color: const Color(0xFF9D95C7),
-          ),
-        ),
+        title: const Text('Delete entry?'),
+        content: const Text('This cannot be undone.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.inter(color: const Color(0xFF9D95C7)),
-            ),
+            child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             child: Text(
               'Delete',
-              style: GoogleFonts.inter(
-                color: Colors.redAccent,
+              style: TextStyle(
+                color: AppColors.errorAccent,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -119,33 +92,43 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
         ],
       ),
     );
-
     if (confirmed == true && mounted) {
       await context.read<JournalCubit>().deleteEntry(widget.entry.id);
       if (mounted) Navigator.of(context).pop();
     }
   }
 
+  // ── Build ──────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F7FF),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [
             _buildAppBar(),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.xl, AppSpacing.sm, AppSpacing.xl, AppSpacing.h,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildDateRow(),
-                    const Gap(24),
+                    const SizedBox(height: AppSpacing.xxl),
                     _buildMoodSection(),
-                    const Gap(24),
+                    const SizedBox(height: AppSpacing.xxl),
                     _buildNoteSection(),
-                    if (_isEditing) ...[const Gap(16), _buildSaveButton()],
+                    if (_isEditing) ...[
+                      const SizedBox(height: AppSpacing.lg),
+                      AppButton.primary(
+                        label: 'Save Changes',
+                        onPressed: _canSave ? _saveEdit : null,
+                        backgroundColor: _currentMood.color,
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -156,129 +139,84 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
     );
   }
 
-  // ── App bar ────────────────────────────────────────────────────────
+  // ── App bar ────────────────────────────────────────────────────────────
+
   Widget _buildAppBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+      padding: const EdgeInsets.fromLTRB(AppSpacing.sm, AppSpacing.sm, AppSpacing.sm, 0),
       child: Row(
         children: [
           IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-            color: const Color(0xFF2D2B55),
+            color: AppColors.textPrimary,
             onPressed: () => Navigator.of(context).pop(),
           ),
           Expanded(
             child: Text(
               _isEditing ? 'Edit Entry' : 'Entry',
-              style: GoogleFonts.inter(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF2D2B55),
-              ),
+              style: AppTextStyles.title,
             ),
           ),
           if (!_isEditing) ...[
             IconButton(
               icon: const Icon(Icons.edit_outlined, size: 20),
-              color: const Color(0xFF7C6FCD),
+              color: AppColors.primary,
               onPressed: () => setState(() => _isEditing = true),
               tooltip: 'Edit',
             ),
             IconButton(
               icon: const Icon(Icons.delete_outline_rounded, size: 20),
-              color: Colors.redAccent,
+              color: AppColors.errorAccent,
               onPressed: _confirmDelete,
               tooltip: 'Delete',
             ),
-          ] else ...[
+          ] else
             TextButton(
-              onPressed: () {
-                // Reset to original values on cancel
-                setState(() {
-                  _isEditing = false;
-                  _editMoodIndex = widget.entry.moodIndex;
-                  _noteController.text = widget.entry.note;
-                });
-              },
+              onPressed: () => setState(() {
+                _isEditing    = false;
+                _editMoodIndex = widget.entry.moodIndex;
+                _noteController.text = widget.entry.note;
+              }),
               child: Text(
                 'Cancel',
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF9D95C7),
-                  fontWeight: FontWeight.w500,
+                style: AppTextStyles.body.copyWith(
+                  color: AppColors.textSecondary,
                 ),
               ),
             ),
-          ],
         ],
       ),
     );
   }
 
-  // ── Date row ───────────────────────────────────────────────────────
-  Widget _buildDateRow() {
-    final date = widget.entry.date;
-    const months = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
-    ];
-    const weekdays = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday',
-    ];
-    final hour = date.hour.toString().padLeft(2, '0');
-    final minute = date.minute.toString().padLeft(2, '0');
-    final label =
-        '${weekdays[date.weekday - 1]}, ${months[date.month - 1]} ${date.day} · $hour:$minute';
+  // ── Date ───────────────────────────────────────────────────────────────
 
+  Widget _buildDateRow() {
+    final d = widget.entry.date;
+    const months   = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const weekdays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+    final h   = d.hour.toString().padLeft(2, '0');
+    final min = d.minute.toString().padLeft(2, '0');
     return Row(
       children: [
-        const Icon(
-          Icons.calendar_today_rounded,
-          size: 14,
-          color: Color(0xFF9D95C7),
-        ),
-        const Gap(6),
+        Icon(Icons.calendar_today_rounded, size: 13, color: AppColors.textSecondary),
+        const SizedBox(width: AppSpacing.xs),
         Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 13,
-            color: const Color(0xFF9D95C7),
-            fontWeight: FontWeight.w400,
-          ),
+          '${weekdays[d.weekday - 1]}, ${months[d.month - 1]} ${d.day} · $h:$min',
+          style: AppTextStyles.caption,
         ),
       ],
     );
   }
 
-  // ── Mood section ───────────────────────────────────────────────────
+  // ── Mood section ───────────────────────────────────────────────────────
+
   Widget _buildMoodSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Mood',
-          style: GoogleFonts.inter(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: const Color(0xFF9D95C7),
-          ),
-        ),
-        const Gap(10),
+        Text('Mood', style: AppTextStyles.caption),
+        const SizedBox(height: AppSpacing.sm),
         _isEditing ? _buildMoodPicker() : _buildMoodBadge(),
       ],
     );
@@ -287,24 +225,22 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
   Widget _buildMoodBadge() {
     final mood = kMoodOptions[widget.entry.moodIndex];
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: mood.lightColor,
-        borderRadius: BorderRadius.circular(20),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.sm,
       ),
+      decoration: AppDecorations.pill(color: mood.lightColor),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // AFTER
           Hero(
             tag: 'mood_emoji_${widget.entry.id}',
             child: Text(mood.emoji, style: const TextStyle(fontSize: 20)),
           ),
-          const Gap(8),
+          const SizedBox(width: AppSpacing.sm),
           Text(
             mood.label,
-            style: GoogleFonts.inter(
-              fontSize: 15,
+            style: AppTextStyles.bodyLarge.copyWith(
               fontWeight: FontWeight.w600,
               color: mood.color,
             ),
@@ -317,24 +253,24 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
   Widget _buildMoodPicker() {
     return Row(
       children: List.generate(kMoodOptions.length, (i) {
-        final mood = kMoodOptions[i];
+        final mood       = kMoodOptions[i];
         final isSelected = _editMoodIndex == i;
         return Padding(
-          padding: const EdgeInsets.only(right: 8),
+          padding: const EdgeInsets.only(right: AppSpacing.sm),
           child: GestureDetector(
             onTap: () {
               HapticFeedback.lightImpact();
               setState(() => _editMoodIndex = i);
             },
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              width: 52,
-              padding: const EdgeInsets.symmetric(vertical: 10),
+              duration: const Duration(milliseconds: 160),
+              width: 54,
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
               decoration: BoxDecoration(
-                color: isSelected ? mood.lightColor : Colors.white,
-                borderRadius: BorderRadius.circular(14),
+                color: isSelected ? mood.lightColor : AppColors.surface,
+                borderRadius: AppRadius.smAll,
                 border: Border.all(
-                  color: isSelected ? mood.color : const Color(0xFFE8E5F5),
+                  color: isSelected ? mood.color : AppColors.borderLight,
                   width: isSelected ? 2 : 1,
                 ),
               ),
@@ -342,15 +278,12 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(mood.emoji, style: const TextStyle(fontSize: 22)),
-                  const Gap(4),
+                  const SizedBox(height: AppSpacing.xs),
                   Text(
                     mood.label,
-                    style: GoogleFonts.inter(
-                      fontSize: 10,
-                      fontWeight: isSelected
-                          ? FontWeight.w600
-                          : FontWeight.w400,
-                      color: isSelected ? mood.color : const Color(0xFF9D95C7),
+                    style: AppTextStyles.labelSmall.copyWith(
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                      color: isSelected ? mood.color : AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -362,7 +295,8 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
     );
   }
 
-  // ── Note section ───────────────────────────────────────────────────
+  // ── Note section ───────────────────────────────────────────────────────
+
   Widget _buildNoteSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -370,25 +304,15 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'Note',
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: const Color(0xFF9D95C7),
-              ),
-            ),
+            Text('Note', style: AppTextStyles.caption),
             if (_isEditing)
               Text(
                 '${_noteController.text.length} / $_maxChars',
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  color: const Color(0xFFBBB7DF),
-                ),
+                style: AppTextStyles.labelMedium,
               ),
           ],
         ),
-        const Gap(10),
+        const SizedBox(height: AppSpacing.sm),
         _isEditing ? _buildNoteEditor() : _buildNoteReadView(),
       ],
     );
@@ -397,66 +321,16 @@ class _EntryDetailScreenState extends State<EntryDetailScreen> {
   Widget _buildNoteReadView() {
     return Text(
       widget.entry.note,
-      style: GoogleFonts.inter(
-        fontSize: 15,
-        height: 1.7,
-        color: const Color(0xFF2D2B55),
-      ),
+      style: AppTextStyles.bodyLarge,
     );
   }
 
   Widget _buildNoteEditor() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF7C6FCD)),
-      ),
-      child: TextField(
-        controller: _noteController,
-        maxLines: null,
-        maxLength: _maxChars,
-        onChanged: (_) => setState(() {}),
-        buildCounter:
-            (_, {required currentLength, required isFocused, maxLength}) =>
-                null,
-        style: GoogleFonts.inter(
-          fontSize: 15,
-          height: 1.7,
-          color: const Color(0xFF2D2B55),
-        ),
-        decoration: const InputDecoration(
-          contentPadding: EdgeInsets.all(16),
-          border: InputBorder.none,
-        ),
-      ),
-    );
-  }
-
-  // ── Save button (edit mode only) ───────────────────────────────────
-  Widget _buildSaveButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: ElevatedButton(
-        onPressed: _canSave ? _saveEdit : null,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: _currentMood.color,
-          disabledBackgroundColor: const Color(0xFFE8E5F5),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          elevation: 0,
-        ),
-        child: Text(
-          'Save Changes',
-          style: GoogleFonts.inter(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-      ),
+    return AppTextField(
+      controller: _noteController,
+      maxLines: null,
+      maxLength: _maxChars,
+      onChanged: (_) => setState(() {}),
     );
   }
 }
