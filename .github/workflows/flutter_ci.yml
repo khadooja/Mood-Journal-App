@@ -5,11 +5,13 @@ on:
     branches:
       - main
       - master
+      - fresh-start-2
 
   pull_request:
     branches:
       - main
       - master
+      - fresh-start-2
 
 jobs:
   analyze-and-test:
